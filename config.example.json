@@ -1,0 +1,66 @@
+{
+  "database_path": "jobs.db",
+  "apis": {
+    "jsearch_api_key": "YOUR_JSEARCH_API_KEY_HERE"
+  },
+  "filters": {
+    "keywords_any": [
+      "senior analyst",
+      "strategy",
+      "business operations",
+      "business analyst",
+      "operations manager"
+    ],
+    "keywords_exclude": [
+      "intern",
+      "junior",
+      "entry level",
+      "sales",
+      "account executive"
+    ],
+    "locations_any": [
+      "remote",
+      "united states",
+      "europe",
+      "india",
+      "bangalore",
+      "bengaluru"
+    ],
+    "seniority_levels": [
+      "senior",
+      "lead",
+      "principal",
+      "manager",
+      "director"
+    ],
+    "job_types": [
+      "fulltime",
+      "contract",
+      "parttime"
+    ],
+    "remote_only": true
+  },
+  "sources": [
+    {
+      "provider": "greenhouse",
+      "token": "openai",
+      "label": "OpenAI"
+    },
+    {
+      "provider": "lever",
+      "slug": "netlify",
+      "label": "Netlify"
+    },
+    {
+      "provider": "ashby",
+      "slug": "notion",
+      "label": "Notion"
+    },
+    {
+      "provider": "jsearch",
+      "label": "JSearch Aggregator",
+      "query": "senior analyst strategy",
+      "num_pages": 1
+    }
+  ]
+}

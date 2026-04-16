@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Search Portal - Senior Analyst & Strategy Roles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Job Search Portal</h1>
+                    <p class="text-sm text-gray-500">Senior Analyst & Strategy Roles</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span id="last-updated" class="text-sm text-gray-500"></span>
+                    <button onclick="refreshJobs()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Sidebar Filters -->
+            <aside class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow p-4 sticky top-4">
+                    <h2 class="font-semibold text-gray-900 mb-4">Filters</h2>
+
+                    <!-- Search -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                        <input
+                            type="text"
+                            id="search-input"
+                            placeholder="Search jobs..."
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            oninput="filterJobs()"
+                        >
+                    </div>
+
+                    <!-- Location Filter -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                        <select id="location-filter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" onchange="filterJobs()">
+                            <option value="">All Locations</option>
+                            <option value="remote">Remote Only</option>
+                            <option value="united states">United States</option>
+                            <option value="europe">Europe</option>
+                            <option value="india">India</option>
+                        </select>
+                    </div>
+
+                    <!-- Source Filter -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Source</label>
+                        <select id="source-filter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" onchange="filterJobs()">
+                            <option value="">All Sources</option>
+                            <option value="jsearch">JSearch (LinkedIn, Indeed, etc.)</option>
+                            <option value="greenhouse">Greenhouse</option>
+                            <option value="lever">Lever</option>
+                            <option value="ashby">Ashby</option>
+                        </select>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Application Status</label>
+                        <select id="status-filter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" onchange="filterJobs()">
+                            <option value="">All Jobs</option>
+                            <option value="saved">Saved</option>
+                            <option value="applied">Applied</option>
+                            <option value="interview">Interview</option>
+                            <option value="offer">Offer</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="border-t pt-4 mt-4">
+                        <h3 class="font-medium text-gray-900 mb-3">Application Stats</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Saved</span>
+                                <span id="stat-saved" class="font-medium">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Applied</span>
+                                <span id="stat-applied" class="font-medium">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Interview</span>
+                                <span id="stat-interview" class="font-medium">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Offers</span>
+                                <span id="stat-offer" class="font-medium">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Job List -->
+            <main class="lg:col-span-3">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-gray-900">
+                        <span id="job-count">0</span> Jobs Found
+                    </h2>
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm text-gray-600">Sort by:</label>
+                        <select id="sort-select" class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm" onchange="filterJobs()">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="company">Company A-Z</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="jobs-container" class="space-y-4">
+                    <!-- Jobs will be rendered here -->
+                    <div class="text-center py-12">
+                        <div class="animate-pulse text-gray-500">Loading jobs...</div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Job Detail Modal -->
+    <div id="job-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="closeModal(event)">
+        <div class="bg-white rounded-xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h3 id="modal-title" class="text-xl font-bold text-gray-900"></h3>
+                        <p id="modal-company" class="text-gray-600"></p>
+                    </div>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                </div>
+
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <span id="modal-location" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"></span>
+                    <span id="modal-source" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"></span>
+                    <span id="modal-posted" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"></span>
+                </div>
+
+                <div class="flex gap-2 mb-4">
+                    <select id="modal-status" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg" onchange="updateJobStatus(this.value)">
+                        <option value="">Select Status...</option>
+                        <option value="saved">Saved</option>
+                        <option value="applied">Applied</option>
+                        <option value="interview">Interview</option>
+                        <option value="offer">Offer</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                    <a id="modal-apply-link" href="#" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Apply Now</a>
+                </div>
+
+                <div class="border-t pt-4">
+                    <h4 class="font-semibold text-gray-900 mb-2">Job Description</h4>
+                    <div id="modal-description" class="prose prose-sm max-w-none text-gray-700"></div>
+                </div>
+
+                <div class="border-t pt-4 mt-4">
+                    <h4 class="font-semibold text-gray-900 mb-2">Notes</h4>
+                    <textarea id="modal-notes" class="w-full px-3 py-2 border border-gray-300 rounded-lg" rows="3" placeholder="Add your notes here..." oninput="saveNotes()"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
