@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import json
+import ssl
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
+
+import certifi
 
 from .config import SourceConfig
 from .models import Job
@@ -23,8 +26,11 @@ def fetch_jobs(source: SourceConfig, api_keys: dict | None = None) -> list[Job]:
 
 
 def _read_json(url: str) -> dict:
+    """Read JSON from URL with proper SSL certificate handling."""
     request = Request(url, headers={"User-Agent": "job-opportunity-agent/0.1"})
-    with urlopen(request, timeout=30) as response:
+    # Use certifi's CA bundle for SSL verification
+    ssl_context = ssl.create_default_context(cafile=certifi.where())
+    with urlopen(request, timeout=30, context=ssl_context) as response:
         return json.loads(response.read().decode("utf-8"))
 
 

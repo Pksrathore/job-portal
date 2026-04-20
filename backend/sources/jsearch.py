@@ -3,8 +3,12 @@
 from __future__ import annotations
 
 import json
+import ssl
+import urllib.parse
 import urllib.request
 from typing import Any
+
+import certifi
 
 from ..models import Job
 
@@ -72,8 +76,8 @@ class JSearchJobFetcher:
 
     def _build_url(self, params: dict[str, str]) -> str:
         """Build URL with query parameters."""
-        query_string = "&".join(f"{key}={value}" for key, value in params.items())
-        return f"{self.BASE_URL}?{query_string}"
+        encoded_params = urllib.parse.urlencode(params)
+        return f"{self.BASE_URL}?{encoded_params}"
 
     def _fetch(self, url: str) -> dict[str, Any]:
         """Fetch data from API."""
@@ -83,7 +87,9 @@ class JSearchJobFetcher:
         }
         request = urllib.request.Request(url, headers=headers)
 
-        with urllib.request.urlopen(request, timeout=30) as response:
+        # Use certifi's CA bundle for SSL verification
+        ssl_context = ssl.create_default_context(cafile=certifi.where())
+        with urllib.request.urlopen(request, timeout=30, context=ssl_context) as response:
             return json.loads(response.read().decode("utf-8"))
 
     def _parse_job(self, item: dict[str, Any]) -> Job | None:
