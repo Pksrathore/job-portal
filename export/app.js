@@ -4,6 +4,7 @@ let allJobs = [];
 let filteredJobs = [];
 let jobApplications = {};
 let currentJobId = null;
+let jobsFeedAvailable = true;
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
@@ -15,6 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadJobs() {
     try {
         const response = await fetch('jobs.json');
+        if (!response.ok) {
+            throw new Error(`jobs.json returned ${response.status}`);
+        }
         const data = await response.json();
 
         allJobs = data.jobs || [];
@@ -23,13 +27,11 @@ async function loadJobs() {
 
         filterJobs();
     } catch (error) {
-        console.error('Error loading jobs:', error);
-        document.getElementById('jobs-container').innerHTML = `
-            <div class="text-center py-12">
-                <div class="text-red-500">Error loading jobs. Make sure jobs.json exists.</div>
-                <p class="text-gray-500 mt-2">${error.message}</p>
-            </div>
-        `;
+        console.warn('Jobs feed unavailable:', error);
+        jobsFeedAvailable = false;
+        allJobs = [];
+        document.getElementById('last-updated').textContent = 'Last updated: no published data yet';
+        filterJobs();
     }
 }
 
@@ -110,8 +112,10 @@ function renderJobs() {
     if (filteredJobs.length === 0) {
         container.innerHTML = `
             <div class="text-center py-12 bg-white rounded-lg shadow">
-                <div class="text-gray-400 text-lg">No jobs found</div>
-                <p class="text-gray-500 mt-2">Try adjusting your filters</p>
+                <div class="text-gray-400 text-lg">${jobsFeedAvailable ? 'No jobs found' : 'No published jobs yet'}</div>
+                <p class="text-gray-500 mt-2">
+                    ${jobsFeedAvailable ? 'Try adjusting your filters' : 'The site is live, but no jobs data has been uploaded yet.'}
+                </p>
             </div>
         `;
         return;
