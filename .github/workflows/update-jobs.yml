@@ -1,0 +1,56 @@
+name: Update Jobs Feed
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-jobs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Generate runtime config
+        env:
+          JSEARCH_API_KEY: ${{ secrets.JSEARCH_API_KEY }}
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          config_path = Path("config.example.json")
+          runtime_path = Path("config.json")
+          config = json.loads(config_path.read_text(encoding="utf-8"))
+          config.setdefault("apis", {})["jsearch_api_key"] = __import__("os").environ.get("JSEARCH_API_KEY", "")
+          runtime_path.write_text(json.dumps(config, indent=2), encoding="utf-8")
+          PY
+
+      - name: Refresh jobs export
+        run: python3 -m backend.main --config config.json --search
+
+      - name: Commit updated export
+        run: |
+          if git diff --quiet -- export/jobs.json; then
+            echo "No jobs export changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add export/jobs.json
+          git commit -m "Refresh jobs feed"
+          git push
